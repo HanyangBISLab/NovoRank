@@ -1,0 +1,34 @@
+#
+# Input
+#
+training = False
+batch_size = 64
+
+# MGF files
+mgf_path = .\sample\mgf
+
+#  .tsv files containing the XCorr calculation results
+xcorr_result = .\sample\xcorr
+
+# The output of gen_feature_top2_candidates.py
+features_csv = .\sample\feature.csv
+
+# Test
+# Pre trained model
+pre_trained_model = .\sample\NovoRank.h5
+
+# Training
+# Deep learning parameters
+val_size = 0.2
+epoch = 50
+
+#
+# Output
+#
+# Train
+# Save trained model
+model_save_name = .\sample\trained_NovoRank.h5
+
+# Test
+# Test result name
+result_name = .\sample\test_result.csv

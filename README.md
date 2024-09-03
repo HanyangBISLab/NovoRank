@@ -143,11 +143,3 @@ Using a pre-trained model, perform testing and output a single assigned peptide 
 - Training \
 The deep learning model is trained based on the hyper-parameters set in the config_run_novorank.txt. \
 The trained model is saved in the .h5 format as the output.
-
-## Rights and Permissions
-<pre>
-- NovoRank © 2024 is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International.
-  This license requires that reusers give credit to the creator. It allows reusers to distribute, 
-  remix, adapt, and build upon the material in any medium or format, for noncommercial purposes only. 
-  If others modify or adapt the material, they must license the modified material under identical terms.
-</pre>

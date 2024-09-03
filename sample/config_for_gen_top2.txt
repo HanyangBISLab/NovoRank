@@ -1,0 +1,33 @@
+#
+# Input
+#
+# MGF files
+mgf_path = .\sample\mgf
+
+# Cluster
+cluster_result_path = .\sample\cluster
+
+# De novo search
+denovo_result_csv = .\sample\de_novo_sample.csv
+
+# DB search (Use for training)
+db_result_csv = .\sample\db_sample.csv
+
+#
+# Output
+#
+# Feature name
+features_csv = .\sample\feature.csv
+
+# MGF files for XCorr calculation
+mgf_xcorr= .\sample\mgf_XCorr
+
+# MGF files to find internal fragment ions
+mgf_remove = .\sample\mgf_remove
+
+#
+#Other parameters
+#
+precusor_search_ppm = 20
+elution_time = 240
+training = False
