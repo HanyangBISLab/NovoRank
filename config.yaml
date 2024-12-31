@@ -1,0 +1,66 @@
+# config.yaml
+
+path:
+  # Path of the clustering result from MS-Cluster
+  cluster_path: ./data/external/mscluster
+
+  # Path of a folder containing MS/MS spectra (MGF format)
+  mgf_path: ./data/raw
+
+  search_results:
+    # Path and filename for de_novo search results (CSV)
+    de_novo:
+      path: ./data/external/denovo
+      filename: PXD014222_Casanovo.csv
+
+    # Path and filename for database search results (CSV)
+    # Used only in the training process.
+    db:
+      path: ./data/external/db
+      filename: PXD014222_db.csv
+
+  # Path to save project outputs
+  save_path: ./data/interim
+
+  # Path of a folder containing MS/MS denoised spectra (MGF format)
+  denoised_mgf_path: ./data/processed/denoised_mgf
+
+  # Path of a folder containing MS/MS spectra for XCorr calculation (MGF format)
+  xcorr_mgf_path: ./data/processed/xcorr_mgf
+
+  # Filename for the interim report (Feature file: CSV)
+  interim_report: dataset_top2.csv
+
+  # Path of the XCorr calculation results from CometX
+  xcorr_results_path: ./data/external/xcorr
+
+  # Path where the trained model will be saved
+  model_save:
+    path: ./models
+    filename: novnorank.h5 # (h5)
+
+  # Path to the pretrained model for inference
+  pretrained_model:
+    path: ./pretrained
+    filename: NovoRank_Casanovo.h5  # Example (h5)
+
+  # Filename for the final report (CSV)
+  final_report: results_top1.csv
+
+params:
+  # Whether to train the model (True: training process, False: Inference process)
+  train: True
+
+  # Whether to create a test dataset (True: create a test dataset, False: do not create)
+  # Used only in the training process.
+  test_set: True
+
+  # Whether to save the model checkpoint during training (True: save checkpoint every epoch, False: do not save)
+  # Used only in the training process.
+  checkpoint: True
+
+  # Whether to report the top 10 results (True: report top 10 candidate results, False: do not report)
+  # Used only in the inference process.
+  top_10: False
+
+  # fine tuning ?

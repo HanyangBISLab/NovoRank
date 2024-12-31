@@ -1,153 +1,159 @@
-# NovoRank
-NovoRank is a machine learning/deep learning-based algorithm that post-processes the De novo sequencing results.
+# NovoRank: Machine Learning-Based Post-Processing Tool for *De Novo* Peptide Sequencing
 
-- NovoRank is implemented and tested with
+NovoRank is a post-processing tool designed to improve the accuracy of *de novo* peptide sequencing in proteomics. Unlike database-dependent methods, *de novo* sequencing derives peptide sequences directly from tandem mass spectrometry (MS/MS) data, enabling the discovery of novel peptides. However, reliance on incomplete scoring functions often leads to incorrect identifications. NovoRank addresses this by re-ranking candidate peptides to recover correct identifications, enhancing both precision and recall. It is compatible with any *de novo* sequencing software, and by reassigning the optimal peptide, NovoRank offers a robust solution for overcoming the noise and ambiguities inherent in MS/MS data.
 
-Python==3.9 \
-requirements.txt
+For detailed insights behind NovoRank, refer to the [**NovoRank paper**]().
 
-and
+<br>
 
-DeepLC ( https://github.com/compomics/DeepLC ) \
-MS-Cluster ( http://proteomics.ucsd.edu/software-tools/ms-clusterarchives ) \
-CometX.exe ( this is in-house software modified to calculate XCorr only. The implementation is based on the Comet software )
+<p align="center">
+    <img src="assets/img.png" width="700"\>
+</p>
+<hr>
 
-All data used in the experiment can be downloaded from the 'sample' folder in the NovoRank GitHub repository and https://drive.google.com/drive/folders/13jir3-QLcAVGtUe84Tfp5utctnHRI-5Q?usp=share_link.
+## Overview
+#### Code structure
+``` Unicode
+NovoRank
+  │ 
+  ├─── generate_candidates_and_extract_features.py
+  │
+  ├─── run_novorank.py
+  │ 
+  ├─── src
+  │     │     
+  │     ├── features
+  │     │     └── featureprocessor.py: Functions for feature calculation
+  │     │       
+  │     ├── loader
+  │     │     └── dataloader.py: Functions for data loading
+  │     │
+  │     ├── model
+  │     │     ├── base_model.py: Base model structure
+  │     │     ├── inference.py: Functions for model inference
+  │     │     ├── preprocess.py: Functions for data preprocessing in modeling
+  │     │     └── train.py: Functions for model training
+  │     │ 
+  │     └─── utils
+  │           ├── config_first.py: Command-line argument parsing and configuration file loading for generate_candidates_and_extract_features.py
+  │           ├── config_second.py: Command-line argument parsing and configuration file loading for run_novorank.py
+  │           ├── process.py: Functions for performing data processing
+  │           └── utils.py: Utility functions providing support
+  │
+  ├─── models: Trained models (may include models saved at each epoch)
+  │
+  ├─── pretrained: Pretrained NovoRank models (Casanovo, PEAKS, pNovo3) in .h5 format
+  │
+  └─── software
+        ├── CometX: XCorr calculation software (in-house software)
+        └── MSCluster: Spectral clustering software
+```
 
-## Quick start for potential reviewers
+## Datasets
+All datasets used in this work are available for download from [**Zenodo**](https://zenodo.org/records/14046459).  
 
-A user can download pre-trained model and test sample data at https://drive.google.com/drive/folders/1ICmLBRBhJGdImi4aPwlQVS6pfKT-Z8sI?usp=share_link and run below command line for quick test:
+To use NovoRank, a user MUST refer to the `README.md` in the [./data](https://github.com/jangho721/NovoRank/tree/main/data) directory, where sample data has also been provided.
 
-- Create and activate an Anaconda virtual environment.
+## Configuration
+  
+  The [config.yaml](https://github.com/jangho721/NovoRank/blob/main/config.yaml) is used to set up the parameters and initial configurations required to run NovoRank. It contains default values, and descriptions for each option are provided as comments within it.
+
+## Requirements
+⦁ To install the required Python packages:
+1. Clone the repository or download the code.
+2. Create and activate an Anaconda virtual environment:
 ```c
 conda create -n [NAME] python==3.9
 conda activate [NAME]
 ```
-
-<br/>
-
-- Install all packages in the requirements.txt file with the following command.
+3. Install the dependencies listed in `requirements.txt`:
 ```c
 pip install -r requirements.txt
 ```
+> **Note:**  
+> NovoRank was implemented using **Python 3.9** and utilizes the [**DeepLC**](https://github.com/compomics/DeepLC) package, which is included in the `requirements.txt`.
+<br>
 
-<br/>
+⦁ Software
+- [**MS-Cluster**](http://proteomics.ucsd.edu/software-tools/ms-clusterarchives) ([Download](https://github.com/jangho721/NovoRank/tree/main/software/MSCluster))
+- [**CometX**](https://github.com/jangho721/NovoRank/tree/main/software/CometX) (In-house software modified to calculate XCorr, based on Comet software)
 
-- Run run_novorank.py.
+## How to Use
+For the description of the datasets required to execute Steps 2 and 4, refer to [Essential Data for Using NovoRank](https://github.com/jangho721/NovoRank/blob/main/data/README.md#essential-data-for-using-novorank).  
+
+- Step 1. Spectral clustering using MS-Cluster
 ```c
-python run_novorank.py .\test\config_for_reviewer.txt
+MSCluster.exe --list [PATH] --output-name CLUSTERS --mixture-prob 0.01 --fragment-tolerance 0.02 --assign-charges
 ```
+> **Note:**  
+> For detailed instructions on using MS-cluster, refer to the [manual](https://github.com/jangho721/NovoRank/blob/main/software/MSCluster/manual.pdf).
+<br>
 
-## How to use NovoRank
+- Step 2. Generate two candidates and extract features
 
-To use NovoRank for your datasets, you HAVE TO train your own model fitting to your datasets.
-
-### Step 1. Preparation datasets
-As an initial step, a user MUST make their datasets to fit NovoRank input standard.
-
-#### De novo search result
-Once you perform de novo search using any tools such as PEAKS, pNovo3 and DeepNovo, you MUST convert the result to below form:
-
-Source File|Scan number|Peptide|Score
----|---|---|---|
-Hela_1.mgf|10|HKPSVK|85|
-
-Note that each column is separated by comma (comma-separated value format (CSV)).
-
-#### Database search result
-NovoRank generates positive and negative labels based on database search result from the same MS/MS spectra used in the de novo search. Therefore, it only needs for training. If a user uses pre-trained model, this file is not needed for the further step. After conducting database search, only reliable PSMs are prepared as below format:
-
-Source File|Scan number|GT
----|---|---|
-Hela_1.mgf|3|KPVGAAK| 
-
-Note that each column is separated by comma (comma-separated value format (CSV)).
-
-#### Note for post-translational modification notation
-NovoRank assumes that all Cysteines (C) have a fixed modification Carbamidomethylation.
-As a variable modification, it only allows an oxidation on Methionine as lower letter "m".
-For example, if AM+15.99EENGR, a user must convert the sequence to AmEENGR.
-
-### Step 2. Initial clustering using MS-Cluster
-
-MS-Cluster software and user’s manual are available at http://proteomics.ucsd.edu/software-tools/ms-clusterarchives/. Create a list of the full paths to the input files and call it list.txt. 
-
-< Clustering to MS-Cluster using the following command line. >
+The parameter that controls the training process or the inference process is specified in the [config.yaml](https://github.com/jangho721/NovoRank/blob/main/config.yaml).  
 ```c
-MSCluster.exe --list list.txt --output-name CLUSTERS --mixture-prob 0.01 --fragment-tolerance 0.02 --assign-charges
-``` 
-
-### Step 3. Generation of deep learning input
-Based on the results of both de novo search and MS-clust, NovoRank generates top two candidates.
-The top two candidates are an initial point to train deep learning model.
-
-A user can set the parameters in 'config_for_gen_top2.txt' file.
-Parameter|Value|Explanation|Mandatory
----|---|---|---|
-mgf_path|String|Path of a folder containing MS/MS spectra (MGF format).|Y|
-denovo_result_csv|String|Path of the de novo search result CSV file (see Step 1. Preparation datasets).|Y|
-db_result_csv|String|Path of the database search result CSV file (see Step 1. Preparation datasets).|N|
-cluster_result_path|String|Path of the clustering result from MS-Cluster.|Y|
-mgf_xcorr|String|Path of a folder containing MS/MS spectra for XCorr calculation (MGF format).|Y|
-mgf_remove|String|Path of a folder containing MS/MS spectra to find internal fragment ions (MGF format).|Y|
-precursor_search_ppm|Float|Precursor PPM tolerance.|Y|
-elution_time|Integer|A total elution time in the mass spectrometry assay (minutes).|Y|
-training|Boolean|If a user wants to train a model, set it True. Otherwise, set False (test only).|Y|
-features_csv|String|Path of a result feature file as output.|Y|
-
-Note that when training sets as "False", NovoRank ignores "db_result_csv".
-
-```c
-python gen_feature_top2_candidates.py config_for_gen_top2.txt
+python generate_candidates_and_extract_features.py --search_ppm [PRECURSOR_TOLERANCE] --elution_time [ELUTION_TIME_MIN]
 ```
+> **Note:**  
+> To check the available options and their descriptions, run the command `python generate_candidates_and_extract_features.py -h`.
+<br>
 
-### Step 4. XCorr calculation
-As a third-part, NovoRank uses XCorr value as an additional feature.
-
-< Calculate XCorr using the following command line of CometX. >
-
+- Step 3. Xcorr calculation using CometX  
 ```c
-CometX.exe -X -Pcomet.params .\mgf_XCorr\*.mgf
-``` 
-
-### Step 5. The last step for training/test of NovoRank
-Lastly, NovoRank takes three inputs: feature.csv and XCorr values obtained from Steps 3 and 4, respectively, as well as the MGF files.
-
-A user can set the parameters in 'config_run_novorank.txt' file.
-Parameter|Value|Explanation|Training or Test
----|---|---|---|
-training|Boolean|If a user wants to train a model, set it True. Otherwise, set False (test only).|Both|
-mgf_path|String|Path of a folder containing MS/MS spectra (MGF format).|Both|
-mgf_xcorr|String|Path of the XCorr calculation TSV file.|Both|
-features_csv|String|Path of the output of gen_feature_top2_candidates.py.|Both|
-batch_size|Integer|Size of batch.|Both|
-val_size|Float|The validation dataset ratio.|Training|
-epoch|Integer|Size of epoch.|Training|
-model_save_name|String|Save path and h5 file name for  trained model.|Training|
-pre_trained_model|String|A path of pre-trained model h5 file.|Test|
-result_name|String|Save path and CSV file name for test result.|Test|
-
-"Both" means that it is used in both cases of training and Test.
-
-```c
-python run_novorank.py config_run_novorank.txt
+CometX.exe -X -Pcomet.params [PATH]\*.mgf
 ```
+> **Note:**  
+> [PATH] is the directory containing MGF files for xcorr calculation.  
+> `*_xcorr.tsv` files will be generated.
+<br>
 
-#### Deep learning model for re-ranking.
+- Step 4. Training & Inference of the NovoRank  
+```c
+python run_novorank.py
+```
+> **Note:**  
+> To check the available options and their descriptions, run the command `python run_novorank.py -h`.
+<br>
 
+1. **Training**  
+To use NovoRank, users **must train a model tailored to their dataset** - it is **recommended** to use a customized model based on the *de novo* search software used.
+The trained model is saved in the `./models/` directory in `.h5` format. Additionally, checkpoint models trained at each epoch can be saved.
+<br>
+
+2. **Inference**  
+Inference can be performed using the pre-trained model. The pre-trained models for testing, created using three types of *de novo* search software (Casanovo, PEAKS, pNovo3), are located in the `./pretrained/` directory.
+<br>
 The deep learning model only handles peptides with a maximum mass of 5000 Da and a length of 40 or less.
 
-- Testing \
-Using a pre-trained model, perform testing and output a single assigned peptide for each spectrum as the result.
+## Results
+<pre>
+- The results_top1.csv file is generated at the ./data/interim location.
+  (The save location and result file name can be changed in the config.yaml file)
+- The NovoRank results are to output a single assigned peptide for each spectrum.
+</pre>
 
-- Training \
-The deep learning model is trained based on the hyper-parameters set in the config_run_novorank.txt. \
-The trained model is saved in the .h5 format as the output.
+## Credits
+NovoRank is created by <a href="https://jangho721.github.io/" target="_blank">Jangho Seo</a>, Seunghyuk Choi, and Eunok Paek at the Hanyang University.
 
-## Rights and Permissions
+## Citation
+```bibTeX
+@article{sep2024novorank,
+  title = {NovoRank: Refinement for De Novo Peptide Sequencing Based on Spectral Clustering and Deep Learning},
+  shorttitle = {NovoRank},
+  author = {Seo, Jangho and Choi, Seunghyuk and Paek, Eunok},
+  journal={Journal of Proteome Research},
+  year={2024}
+}
+```
+
+## License
 <pre>
 - NovoRank © 2024 is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International.
   This license requires that reusers give credit to the creator. It allows reusers to distribute, 
   remix, adapt, and build upon the material in any medium or format, for noncommercial purposes only. 
   If others modify or adapt the material, they must license the modified material under identical terms.
 </pre>
+
+## Contact
+If you have any questions, feel free to [open an issue](https://github.com/jangho721/NovoRank/issues/new) or contact [Jangho Seo](https://jangho721.github.io/) or any of the contributors listed above.
