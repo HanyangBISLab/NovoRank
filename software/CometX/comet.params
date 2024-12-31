@@ -1,0 +1,47 @@
+# comet_version 2019.01 rev. 5
+# Comet MS/MS search engine parameters file.
+# Everything following the '#' symbol is treated as a comment.
+
+#
+# output
+#
+output_percolatorfile = 0              # 0=no, 1=yes  write Percolator tab-delimited input file
+
+#
+# Up to 9 variable modifications are supported
+# format:  <mass> <residues> <0=variable/else binary> <max_mods_per_peptide> <term_distance> <n/c-term> <required> <neutral_loss>
+#     e.g. 79.966331 STY 0 3 -1 0 0 97.976896
+#
+variable_mod01 = 15.9949 M 0 3 -1 0 0 0.0
+variable_mod02 = 0.0 X 0 3 -1 0 0 0.0
+variable_mod03 = 0.0 X 0 3 -1 0 0 0.0
+variable_mod04 = 0.0 X 0 3 -1 0 0 0.0
+variable_mod05 = 0.0 X 0 3 -1 0 0 0.0
+variable_mod06 = 0.0 X 0 3 -1 0 0 0.0
+variable_mod07 = 0.0 X 0 3 -1 0 0 0.0
+variable_mod08 = 0.0 X 0 3 -1 0 0 0.0
+variable_mod09 = 0.0 X 0 3 -1 0 0 0.0
+max_variable_mods_in_peptide = 3
+require_variable_mod = 0
+
+#
+# fragment ions
+#
+# ion trap ms/ms:  1.0005 tolerance, 0.4 offset (mono masses), theoretical_fragment_ions = 1
+# high res ms/ms:    0.02 tolerance, 0.0 offset (mono masses), theoretical_fragment_ions = 0, spectrum_batch_size = 15000
+#
+fragment_bin_tol = 0.025               # binning to use on fragment ions
+fragment_bin_offset = 0.4              # offset position to start the binning (0.0 to 1.0)
+theoretical_fragment_ions = 1          # 0=use flanking peaks, 1=M peak only
+use_A_ions = 0
+use_B_ions = 1
+use_C_ions = 0
+use_X_ions = 0
+use_Y_ions = 1
+use_Z_ions = 0
+use_NL_ions = 1                        # 0=no, 1=yes to consider NH3/H2O neutral loss peaks
+
+#
+# misc parameters
+#
+spectrum_batch_size = 15000            # max. # of spectra to search at a time; 0 to search the entire scan range in one loop
