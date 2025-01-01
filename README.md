@@ -2,7 +2,7 @@
 
 NovoRank is a post-processing tool designed to improve the accuracy of *de novo* peptide sequencing in proteomics. Unlike database-dependent methods, *de novo* sequencing derives peptide sequences directly from tandem mass spectrometry (MS/MS) data, enabling the discovery of novel peptides. However, reliance on incomplete scoring functions often leads to incorrect identifications. NovoRank addresses this by re-ranking candidate peptides to recover correct identifications, enhancing both precision and recall. It is compatible with any *de novo* sequencing software, and by reassigning the optimal peptide, NovoRank offers a robust solution for overcoming the noise and ambiguities inherent in MS/MS data.
 
-For detailed insights behind NovoRank, refer to the [**NovoRank paper**]().
+For detailed insights behind NovoRank, refer to the [**NovoRank paper**](https://pubs.acs.org/doi/10.1021/acs.jproteome.4c00300).
 
 <br>
 
